@@ -1,0 +1,8 @@
+body{
+    background-color: #806cf7;
+}
+canvas{
+    position: absolute;
+    left: 0;
+    cursor:move;
+}
