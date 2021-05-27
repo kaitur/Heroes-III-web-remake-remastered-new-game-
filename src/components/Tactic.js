@@ -1,6 +1,13 @@
 import React from 'react';
 import "./Tactic.css";
 
+class Objects {
+    constructor(speed_, color_) {
+        this.speed = speed_;
+        this.color = color_;
+    }
+}
+
 export default class Tactic extends React.Component {
 
     constructor(props) {
@@ -8,22 +15,22 @@ export default class Tactic extends React.Component {
         this.canWinHandleMouseMove = this.canWinHandleMouseMove.bind(this);
         this.canWinHandleMouseClick = this.canWinHandleMouseClick.bind(this);
         this.state = {
-            
-          }
+
+        }
         this.canvasWidth_ = 0;
         this.canvasHeight_ = 0;
-        let sideCoef = document.documentElement.clientWidth / document.documentElement.clientHeight;
+        let sideCoef = window.innerWidth / window.innerHeight;
         if (sideCoef > 1) {
-            this.canvasHeight_ = document.documentElement.clientHeight;
+            this.canvasHeight_ = window.innerHeight;
             this.canvasWidth_ = this.canvasHeight_ * 4 / 3;
         }
         else {
-            this.canvasWidth_ = document.documentElement.clientWidth;
+            this.canvasWidth_ = window.innerWidth;
             this.canvasHeight_ = this.canvasWidth_ * 3 / 4;
         }
 
-        this.canvasX = (document.documentElement.clientWidth - this.canvasWidth_) / 2;
-        this.canvasY = (document.documentElement.clientHeight - this.canvasHeight_) / 2;
+        this.canvasX = (window.innerWidth - this.canvasWidth_) / 2;
+        this.canvasY = (window.innerHeight - this.canvasHeight_) / 2;
         this.canvasWidth = this.canvasWidth_ + this.canvasX;
         this.canvasHeight = this.canvasHeight_ + this.canvasY;
 
@@ -31,12 +38,19 @@ export default class Tactic extends React.Component {
         this.ySize = 1.1;
         this.gridWidth = 15;
         this.gridHeight = 11;
-        this.hexWidth = 74;
+        this.hexWidth = this.canvasWidth_ / 18.15;
         this.hexHeight = 2 * Math.sqrt(3) / 3 * this.hexWidth * this.ySize;
         this.gridX = (this.canvasWidth_ - 15.5 * this.hexWidth) / 2 + this.hexWidth / 2;
         this.gridY = -this.hexHeight / 4 + this.canvasHeight_ * 0.14;
 
         this.currHex = this.Point(0, 0);
+        this.objects = [];
+        for (let i = 0; i < 15; i++)
+            this.objects[i] = [];
+        this.objects[0][9] = new Objects(5, "red");
+        this.objects[2][1] = new Objects(5, "yellow");
+        this.objects[5][4] = new Objects(5, "blue");
+        this.objects[3][1] = new Objects(5, "lime");
     }
 
     componentDidMount() {
@@ -85,48 +99,70 @@ export default class Tactic extends React.Component {
         ctx.translate(this.canvasX, this.canvasY);
 
         let img = new Image();
-        //img.src = "battle background/CmBkDes.png";
-        img.src = "battle background/backCheck.png";
+        img.src = "battle background/CmBkDes.png";
+        //img.src = "battle background/backCheck.png";
         img.onload = () => { this.drawImageCan(img, this.canBack) };
 
         this.drawGrid(this.canGrid);
+        this.drawObjects(this.canObj);
     }
 
     drawGrid(canvasID) {
         for (let i = 0; i < this.gridHeight; i++) {
             for (let j = 0; j < this.gridWidth; j++) {
-                this.drawHex(canvasID, this.Point(j, i), "red");
                 this.drawHex(canvasID, this.Point(j, i), this.gridColor);
             }
         }
     }
 
+    drawObjects(canvasID) {
+        this.clearCan(this.canObj);
+        for (let i = 0; i < 15; i++)
+            for (let j = 0; j < 11; j++)
+                if (this.objects[i][j])
+                    this.drawFillHex(canvasID, this.Point(i, j), this.objects[i][j].color);
+    }
+
     drawHex(canvasID, index, color) {
         let coord = this.indexToPixel(index);
+        let points = [];
 
-        let start = this.Point(coord.x, coord.y - (this.hexHeight / 2));
-        let end = this.Point(coord.x - this.hexWidth / 2, coord.y - (this.hexHeight / 4));
-        this.drawLineCan(canvasID, start, end, color, 2);
+        points[0] = this.Point(coord.x, coord.y - (this.hexHeight / 2));
+        points[1] = this.Point(coord.x - this.hexWidth / 2, coord.y - (this.hexHeight / 4));
+        points[2] = this.Point(coord.x - this.hexWidth / 2, coord.y + (this.hexHeight / 4));
+        points[3] = this.Point(coord.x, coord.y + (this.hexHeight / 2));
+        points[4] = this.Point(coord.x + this.hexWidth / 2, coord.y + (this.hexHeight / 4));
+        points[5] = this.Point(coord.x + this.hexWidth / 2, coord.y - (this.hexHeight / 4));
+        points[6] = this.Point(coord.x, coord.y - (this.hexHeight / 2));
 
-        start = end;
-        end = this.Point(coord.x - this.hexWidth / 2, coord.y + (this.hexHeight / 4));
-        this.drawLineCan(canvasID, start, end, color, 2);
+        for (let i = 0; i < 6; i++)
+            this.drawLineCan(canvasID, points[i], points[i + 1], color, 2);
+    }
 
-        start = end;
-        end = this.Point(coord.x, coord.y + (this.hexHeight / 2));
-        this.drawLineCan(canvasID, start, end, color, 2);
+    drawFillHex(canvasID, index, color) {
+        const ctx = canvasID.getContext("2d");
 
-        start = end;
-        end = this.Point(coord.x + this.hexWidth / 2, coord.y + (this.hexHeight / 4));
-        this.drawLineCan(canvasID, start, end, color, 2);
+        let coord = this.indexToPixel(index);
+        let points = [];
 
-        start = end;
-        end = this.Point(coord.x + this.hexWidth / 2, coord.y - (this.hexHeight / 4));
-        this.drawLineCan(canvasID, start, end, color, 2);
+        points[0] = this.Point(coord.x, coord.y - (this.hexHeight / 2));
+        points[1] = this.Point(coord.x - this.hexWidth / 2, coord.y - (this.hexHeight / 4));
+        points[2] = this.Point(coord.x - this.hexWidth / 2, coord.y + (this.hexHeight / 4));
+        points[3] = this.Point(coord.x, coord.y + (this.hexHeight / 2));
+        points[4] = this.Point(coord.x + this.hexWidth / 2, coord.y + (this.hexHeight / 4));
+        points[5] = this.Point(coord.x + this.hexWidth / 2, coord.y - (this.hexHeight / 4));
+        points[6] = this.Point(coord.x, coord.y - (this.hexHeight / 2));
 
-        start = end;
-        end = this.Point(coord.x, coord.y - (this.hexHeight / 2));
-        this.drawLineCan(canvasID, start, end, color, 2);
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.5;
+
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i <= 6; i++)
+            ctx.lineTo(points[i].x, points[i].y);
+
+        ctx.closePath();
+        ctx.fill();
     }
 
     drawLineCan(canvasID, start, end, color, lineWidth) {
@@ -143,6 +179,11 @@ export default class Tactic extends React.Component {
     drawImageCan(img, canvasID) {
         const ctx = canvasID.getContext("2d");
         ctx.drawImage(img, 0, 0, this.canvasWidth_, this.canvasHeight_);
+    }
+
+    clearCan(canvasID) {
+        const ctx = canvasID.getContext("2d");
+        ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     }
 
     Point(x, y) {
@@ -163,11 +204,11 @@ export default class Tactic extends React.Component {
         );
     }
 
-    Distance(p1, p2) {
+    distance(p1, p2) {
         return Math.sqrt(Math.pow(Math.abs(p1.x - p2.x), 2) + Math.pow(Math.abs(p1.y - p2.y), 2));
     }
 
-    MouseIndex(mouse) {
+    mouseIndex(mouse) {
         mouse.x -= this.gridX + this.canvasX - this.hexWidth / 2;
         mouse.y -= this.gridY + this.canvasY + this.hexHeight / 4;
         let base = this.Point(0, 0);
@@ -206,29 +247,23 @@ export default class Tactic extends React.Component {
         //this.drawHex(this.canGrid, py2, "red");
 
         let result = base;
-        if (this.Distance(this.indexToPixel(px), mouse) < this.Distance(this.indexToPixel(result), mouse))
+        if (this.distance(this.indexToPixel(px), mouse) < this.distance(this.indexToPixel(result), mouse))
             result = px;
-        if (this.Distance(this.indexToPixel(py1), mouse) < this.Distance(this.indexToPixel(result), mouse))
+        if (this.distance(this.indexToPixel(py1), mouse) < this.distance(this.indexToPixel(result), mouse))
             result = py1;
-        if (this.Distance(this.indexToPixel(py2), mouse) < this.Distance(this.indexToPixel(result), mouse))
+        if (this.distance(this.indexToPixel(py2), mouse) < this.distance(this.indexToPixel(result), mouse))
             result = py2;
         //return this.Point(0, 0);
         return result;
     }
 
     canWinHandleMouseMove(e) {
-        if (true) {
-            let newHex = this.MouseIndex(this.Point(e.pageX, e.pageY));
-            if (this.currHex !== this.newHex && newHex.y >= 0 && newHex.y < this.gridHeight && newHex.x >= 0 && newHex.x < this.gridWidth)
-            {
-                this.drawHex(this.canGrid, this.currHex, this.gridColor);
-                this.currHex = newHex;
-                this.drawHex(this.canGrid, this.currHex, "red");
-            }
+        if (false) {
+
         }
         else {
             this.canIntHandleMouseMove(e);
-            this.canGridHandleMouseMove(e);
+            this.gridHandleMouseMove(e);
         }
     }
 
@@ -236,17 +271,24 @@ export default class Tactic extends React.Component {
 
     }
 
-    canGridHandleMouseMove(e) {
-
+    gridHandleMouseMove(e) {
+        let newHex = this.mouseIndex(this.Point(e.pageX, e.pageY));
+        if (this.currHex !== this.newHex) {
+            this.clearCan(this.canSel);
+            this.currHex = newHex;
+            if (newHex.y >= 0 && newHex.y < this.gridHeight && newHex.x >= 0 && newHex.x < this.gridWidth) {
+                this.drawFillHex(this.canSel, this.currHex, "black");
+            }
+        }
     }
 
     canWinHandleMouseClick(e) {
         if (false) {
-            
+
         }
         else {
             this.canIntHandleMouseClick(e);
-            this.canGridHandleMouseClick(e);
+            this.gridHandleMouseClick(e);
         }
     }
 
@@ -254,8 +296,10 @@ export default class Tactic extends React.Component {
 
     }
 
-    canGridHandleMouseClick(e) {
-
+    gridHandleMouseClick(e) {
+        if (this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth)
+            this.objects[this.currHex.x][this.currHex.y] = new Objects(1, "white");
+        this.drawObjects(this.canObj);
     }
 
     render() {
