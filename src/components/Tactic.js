@@ -98,13 +98,22 @@ export default class Tactic extends React.Component {
         ctx = this.canWin.getContext("2d");
         ctx.translate(this.canvasX, this.canvasY);
 
-        let img = new Image();
-        img.src = "battle background/CmBkDes.png";
-        //img.src = "battle background/backCheck.png";
-        img.onload = () => { this.drawImageCan(img, this.canBack) };
+        this.DI(this.canBack, "battle background/CmBkDes.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
+        this.DI(this.canInt, "https://i.ibb.co/Y7rBY7W/Frame.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
 
         this.drawGrid(this.canGrid);
         this.drawObjects(this.canObj);
+    }
+
+    DI(canvasID, image, x, y, width, height) {
+        let img = new Image();
+        img.src = image;
+        img.onload = () => { this.drawImageCan(canvasID, img, x, y, width, height) };
+    }
+
+    drawImageCan(canvasID, img, x ,y, width, height) {
+        const ctx = canvasID.getContext("2d");
+        ctx.drawImage(img, x, y, width, height);
     }
 
     drawGrid(canvasID) {
@@ -163,6 +172,7 @@ export default class Tactic extends React.Component {
 
         ctx.closePath();
         ctx.fill();
+        ctx.globalAlpha = 1;
     }
 
     drawLineCan(canvasID, start, end, color, lineWidth) {
@@ -174,11 +184,6 @@ export default class Tactic extends React.Component {
         ctx.lineTo(end.x, end.y);
         ctx.stroke();
         ctx.closePath();
-    }
-
-    drawImageCan(img, canvasID) {
-        const ctx = canvasID.getContext("2d");
-        ctx.drawImage(img, 0, 0, this.canvasWidth_, this.canvasHeight_);
     }
 
     clearCan(canvasID) {
@@ -235,7 +240,7 @@ export default class Tactic extends React.Component {
             py1 = this.Point(base.x, base.y - 1);
             py2 = this.Point(base.x + 1, base.y - 1);
         }
-        if ((base.y + 1) % 2 == 0) {
+        if ((base.y + 1) % 2 === 0) {
             py1.x--;
             py2.x--;
         }
