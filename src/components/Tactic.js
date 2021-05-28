@@ -5,10 +5,10 @@ class Objects {
     constructor(x, y, speed_, image, double_) {
         this.speed = speed_;
         this.img = image;
-        this.double = double_;
+        this.doubleCell = double_;
         this.canMove = [];
-        this.canMove[0] = { x: x - 1, y: y + 0 };
-        this.canMove[2] = { x: x - 1, y: y + 1 };
+        //this.canMove[0] = { x: x - 1, y: y + 0 };
+        //this.canMove[1] = { x: x - 1, y: y + 1 };
     }
 }
 
@@ -19,9 +19,7 @@ export default class Tactic extends React.Component {
         this.canWinHandleMouseMove = this.canWinHandleMouseMove.bind(this);
         this.canWinHandleMouseClick = this.canWinHandleMouseClick.bind(this);
         this.handleServerMessage = this.handleServerMessage.bind(this);
-        this.state = {
 
-        }
         this.canvasWidth_ = 0;
         this.canvasHeight_ = 0;
         let sideCoef = window.innerWidth / window.innerHeight;
@@ -60,9 +58,12 @@ export default class Tactic extends React.Component {
         this.unit = this.canvasHeight_ / 600;
 
         let scheme = document.location.protocol === "https:" ? "wss" : "ws";
-        let connectionUrl = scheme + "://localhost:5000/ws";
+        let connectionUrl = scheme + "://10.0.0.150:5000/ws";
+        console.log(document.location.hostname);
         this.socket = new WebSocket(connectionUrl);
         this.socket.onmessage = this.handleServerMessage;
+
+        this.currObj = this.Point(3, 4);
     }
 
     componentDidMount() {
@@ -115,6 +116,13 @@ export default class Tactic extends React.Component {
 
         this.drawGrid(this.canGrid);
         this.drawObjects(this.canObj);
+
+        let cursor = "https://i.ibb.co/hXyhbK8/image.png";
+        this.changeCursor(cursor);
+    }
+
+    changeCursor(link) {
+        document.body.style.cursor = "url(" + link + "), auto";
     }
 
     DI(canvasID, image, x, y, width, height) {
@@ -138,11 +146,12 @@ export default class Tactic extends React.Component {
 
     drawObjects(canvasID) {
         this.clearCan(this.canObj);
+        this.clearCan(this.canFill);
         for (let i = 0; i < 15; i++)
             for (let j = 0; j < 11; j++) {
                 if (this.objects[i][j]) {
                     for (let x = 0; this.objects[i][j].canMove[x]; x++)
-                        this.drawFillHex(this.canObj, this.objects[i][j].canMove[x], "black");
+                        this.drawFillHex(this.canFill, this.objects[i][j].canMove[x], "black");
 
                     let img = new Image();
                     img.src = this.objects[i][j].img;
@@ -150,12 +159,12 @@ export default class Tactic extends React.Component {
                     coord.x -= this.hexWidth / 2;
                     coord.y -= this.hexHeight;
                     let size = this.Point(this.hexWidth * 1.25, this.hexHeight * 1.25);
-                    if (this.objects[i][j].double)
+                    if (this.objects[i][j].doubleCell)
                         size.x *= 2;
                     img.onload = () => { this.drawImageCan(canvasID, img, coord.x, coord.y, size.x, size.y) };
 
                     this.drawFillHex(canvasID, this.Point(i, j), "blue");
-                    if (this.objects[i][j].double)
+                    if (this.objects[i][j].doubleCell)
                         this.drawFillHex(canvasID, this.Point(i + 1, j), "blue");
                 }
             }
@@ -292,10 +301,13 @@ export default class Tactic extends React.Component {
     }
 
     canWinHandleMouseMove(e) {
-        if (false) {
-
+        if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(645) && e.pageX < this.canvasX + this.units(694)) {
+            let cursor = "https://i.ibb.co/VQXM3Mr/Spell-Book.png";
+            this.changeCursor(cursor);
         }
         else {
+            let cursor = "https://i.ibb.co/hXyhbK8/image.png";
+            this.changeCursor(cursor);
             this.canIntHandleMouseMove(e);
             this.gridHandleMouseMove(e);
         }
@@ -314,7 +326,17 @@ export default class Tactic extends React.Component {
                 this.drawFillHex(this.canSel, this.currHex, "black");
             }
         }
+        if (newHex.y >= 0 && newHex.y < this.gridHeight && newHex.x >= 0 && newHex.x < this.gridWidth && (this.objects[this.currHex.x][this.currHex.y] || this.currHex.x > 0 && this.objects[this.currHex.x - 1][this.currHex.y] ) ){
+            let cursor = "https://i.ibb.co/3dYqbTc/image-2021-05-28-14-39-03.png";
+            this.changeCursor(cursor);
+        }
+        else {
+            let cursor = "https://i.ibb.co/hXyhbK8/image.png";
+            this.changeCursor(cursor);
+        }
     }
+
+    
 
     units(u) {
         return this.unit * u;
@@ -351,9 +373,13 @@ export default class Tactic extends React.Component {
     }
 
     handleServerMessage(e) {
-        let p = JSON.parse(e.data);
-            this.objects[p.x][p.y] = new Objects(1, "white");
-            this.drawObjects(this.canObj);
+        let newPos = JSON.parse(e.data);
+        this.objects[newPos.x][newPos.y] = this.objects[this.currObj.x][this.currObj.y];
+        this.objects[this.currObj.x][this.currObj.y] = null;
+        this.currObj.x = newPos.x;
+        this.currObj.y = newPos.y;
+
+        this.drawObjects(this.canObj);
     }
 
     render() {
