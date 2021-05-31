@@ -50,9 +50,9 @@ export default class Tactic extends React.Component {
         this.objects = [];
         for (let i = 0; i < 15; i++)
             this.objects[i] = [];
-        this.objects[3][4] = new Objects(3, 4, 3, "https://i.ibb.co/rGJc40v/Zealot.png", false);
-        this.objects[4][9] = new Objects(4, 9, 5, "https://i.ibb.co/263MvmM/Angel.png", false);
-        this.objects[11][7] = new Objects(11, 7, 3, "https://i.ibb.co/s5CCHZj/Royal-Griffin.png", true);
+        this.objects[3][4] = new Objects(3, 4, 3, "https://i.ibb.co/smx7dvv/Archer.png", false);
+        this.objects[4][9] = new Objects(4, 9, 5, "https://i.ibb.co/4JSmPHS/Halberdier.png", false);
+        this.objects[11][7] = new Objects(11, 7, 3, "https://i.ibb.co/zV0VBTQ/Champion.png", true);
 
         this.window = false;
         this.unit = this.canvasHeight_ / 600;
@@ -112,13 +112,13 @@ export default class Tactic extends React.Component {
         ctx.translate(this.canvasX, this.canvasY);
 
         this.DI(this.canBack, "battle background/CmBkDes.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
-        this.DI(this.canInt, "https://i.ibb.co/Y7rBY7W/Frame.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
+        this.DI(this.canInt, "https://i.ibb.co/R7qdznS/game-Frame.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
 
         this.drawGrid(this.canGrid);
         this.drawObjects(this.canObj);
 
-        //let cursor = "https://i.ibb.co/hXyhbK8/image.png";
-        //this.changeCursor(cursor);
+        let cursor = "https://i.ibb.co/R47FfMb/Cursor-Default.png";
+        this.changeCursor(cursor);
     }
 
     changeCursor(link) {
@@ -262,30 +262,18 @@ export default class Tactic extends React.Component {
 
         mouse.x += this.gridX - this.hexWidth / 2;
         mouse.y += this.gridY + this.hexHeight / 4;
-        if (mouse.x > this.indexToPixel(base).x) {
-            if (mouse.y > this.indexToPixel(base).y) {
+        if (mouse.x > this.indexToPixel(base).x)
+            if (mouse.y > this.indexToPixel(base).y)
                 base2 = this.Point(base.x + 1, base.y + 1);
-            }
-            else {
+            else
                 base2 = this.Point(base.x + 1, base.y - 1);
-            }
-        }
-        else {
-            if (mouse.y > this.indexToPixel(base).y) {
+        else
+            if (mouse.y > this.indexToPixel(base).y)
                 base2 = this.Point(base.x, base.y + 1);
-            }
-            else {
+            else
                 base2 = this.Point(base.x, base.y - 1);
-            }
-        }
-
-        if ((base.y + 1) % 2 === 0) {
+        if ((base.y + 1) % 2 === 0)
             base2.x--;
-        }
-
-        //this.clearCan(this.canGrid);
-        //this.drawHex(this.canGrid, base, "blue");
-        //this.drawHex(this.canGrid, base2, "red");
 
         if (this.distance(this.indexToPixel(base), mouse) < this.distance(this.indexToPixel(base2), mouse))
             return base;
@@ -294,14 +282,16 @@ export default class Tactic extends React.Component {
 
     canWinHandleMouseMove(e) {
         if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(638) && e.pageX < this.canvasX + this.units(688)) {
-            let cursor = "https://i.ibb.co/VQXM3Mr/Spell-Book.png";
+            let cursor = "https://i.ibb.co/562q352/Cursor-Spell-Book-3.png";
             this.changeCursor(cursor);
         }
         else {
-            let cursor = "https://i.ibb.co/hXyhbK8/image.png";
+            let cursor = "https://i.ibb.co/R47FfMb/Cursor-Default.png";
             this.changeCursor(cursor);
-            this.canIntHandleMouseMove(e);
-            this.gridHandleMouseMove(e);
+            if (!this.window) {
+                this.canIntHandleMouseMove(e);
+                this.gridHandleMouseMove(e);
+            }
         }
     }
 
@@ -319,11 +309,11 @@ export default class Tactic extends React.Component {
             }
         }
         if (newHex.y >= 0 && newHex.y < this.gridHeight && newHex.x >= 0 && newHex.x < this.gridWidth && (this.objects[this.currHex.x][this.currHex.y] || this.currHex.x > 0 && this.objects[this.currHex.x - 1][this.currHex.y] && this.objects[this.currHex.x - 1][this.currHex.y].doubleCell)) {
-            let cursor = "https://i.ibb.co/3dYqbTc/image-2021-05-28-14-39-03.png";
+            let cursor = "https://i.ibb.co/562q352/Cursor-Spell-Book-3.png";
             this.changeCursor(cursor);
         }
         else {
-            let cursor = "https://i.ibb.co/hXyhbK8/image.png";
+            let cursor = "https://i.ibb.co/R47FfMb/Cursor-Default.png";
             this.changeCursor(cursor);
         }
     }
@@ -340,12 +330,12 @@ export default class Tactic extends React.Component {
             }
             else {
                 this.window = true;
-                this.DI(this.canWin, "https://i.ibb.co/kycNxtw/Spellbook.png", (this.canvasWidth_ * (1 / 2)) * (1 / 2), ((this.canvasHeight_ * (2 / 3)) * (1 / 2)) / 2, this.canvasWidth_ * (1 / 2), this.canvasHeight_ * (2 / 3));
+                this.DI(this.canWin, "https://i.ibb.co/F4fJWZ2/Spellbook.png", (this.canvasWidth_ * (1 / 2)) * (1 / 2), ((this.canvasHeight_ * (2 / 3)) * (1 / 2)) / 2, this.canvasWidth_ * (1 / 2), this.canvasHeight_ * (2 / 3));
                 this.DI(this.canWin, "https://i.ibb.co/s9dgVPT/image.png", this.units(645), this.units(560), this.units(47), this.units(35));
                 //https://i.ibb.co/s9dgVPT/image.png
             }
         }
-        else {
+        else if (!this.window) {
             this.canIntHandleMouseClick(e);
             this.gridHandleMouseClick(e);
         }
