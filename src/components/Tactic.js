@@ -16,9 +16,21 @@ export default class Tactic extends React.Component {
 
     constructor(props) {
         super(props);
-        this.canWinHandleMouseMove = this.canWinHandleMouseMove.bind(this);
         this.canWinHandleMouseClick = this.canWinHandleMouseClick.bind(this);
-        this.handleServerMessage = this.handleServerMessage.bind(this);
+        this.canWinHandleMouseMove = this.canWinHandleMouseMove.bind(this);
+        this.canWinHandleMouseDown = this.canWinHandleMouseDown.bind(this);
+        this.canWinHandleMouseUp = this.canWinHandleMouseUp.bind(this);
+        //this.handleServerMessage = this.handleServerMessage.bind(this);
+
+        this.buttonComputer = false;
+        this.buttonSurrender = false;
+        this.buttonRetreat = false;
+        this.buttonAutoFight = false;
+        this.buttonConsoleUp = false;
+        this.buttonConsoleDown = false;
+        this.buttonSpellBook = false;
+        this.buttonWait = false;
+        this.buttonHoldPosition = false;
 
         this.canvasWidth_ = 0;
         this.canvasHeight_ = 0;
@@ -50,8 +62,8 @@ export default class Tactic extends React.Component {
         this.objects = [];
         for (let i = 0; i < 15; i++)
             this.objects[i] = [];
-        this.objects[3][4] = new Objects(3, 4, 3, "https://i.ibb.co/smx7dvv/Archer.png", false);
-        this.objects[4][9] = new Objects(4, 9, 5, "https://i.ibb.co/4JSmPHS/Halberdier.png", false);
+        this.objects[3][4] = new Objects(3, 4, 3, "https://i.ibb.co/j8qr53X/pess.png", false);
+        this.objects[4][9] = new Objects(4, 9, 5, "https://i.ibb.co/G2xn5bW/Royal-Griffin.png", true);
         this.objects[11][7] = new Objects(11, 7, 3, "https://i.ibb.co/zV0VBTQ/Champion.png", true);
 
         this.window = false;
@@ -112,7 +124,7 @@ export default class Tactic extends React.Component {
         ctx.translate(this.canvasX, this.canvasY);
 
         this.DI(this.canBack, "battle background/CmBkDes.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
-        this.DI(this.canInt, "https://i.ibb.co/R7qdznS/game-Frame.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
+        this.DI(this.canInt, "https://i.ibb.co/kGK4GmT/game-Frame.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
 
         this.drawGrid(this.canGrid);
         this.drawObjects(this.canObj);
@@ -289,7 +301,7 @@ export default class Tactic extends React.Component {
             let cursor = "https://i.ibb.co/R47FfMb/Cursor-Default.png";
             this.changeCursor(cursor);
             if (!this.window) {
-                this.canIntHandleMouseMove(e);
+                //this.canIntHandleMouseMove(e);
                 this.gridHandleMouseMove(e);
             }
         }
@@ -323,21 +335,29 @@ export default class Tactic extends React.Component {
     }
 
     canWinHandleMouseClick(e) {
-        if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(638) && e.pageX < this.canvasX + this.units(688)) {
-            if (this.window) {
-                this.window = false;
-                this.clearCan(this.canWin);
-            }
-            else {
-                this.window = true;
-                this.DI(this.canWin, "https://i.ibb.co/F4fJWZ2/Spellbook.png", (this.canvasWidth_ * (1 / 2)) * (1 / 2), ((this.canvasHeight_ * (2 / 3)) * (1 / 2)) / 2, this.canvasWidth_ * (1 / 2), this.canvasHeight_ * (2 / 3));
-                this.DI(this.canWin, "https://i.ibb.co/s9dgVPT/image.png", this.units(645), this.units(560), this.units(47), this.units(35));
-                //https://i.ibb.co/s9dgVPT/image.png
+        this.canIntHandleMouseClick(e);
+    }
+
+    canWinHandleMouseDown(e) {
+        if (false) {
+
+        }
+        else {
+            if (!this.window) {
+                this.canIntHandleMouseDown(e);
             }
         }
-        else if (!this.window) {
-            this.canIntHandleMouseClick(e);
-            this.gridHandleMouseClick(e);
+    }
+
+    canWinHandleMouseUp(e) {
+        if (false) {
+
+        }
+        else {
+            if (!this.window) {
+                this.gridHandleMouseClick(e);
+                this.canIntHandleMouseUp(e);
+            }
         }
     }
 
@@ -345,14 +365,102 @@ export default class Tactic extends React.Component {
 
     }
 
-    gridHandleMouseClick(e) {
-        if (this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
-            let p = this.Point(this.currHex.x, this.currHex.y);
-            this.socket.send(JSON.stringify(p));
+    canIntHandleMouseDown(e) {
+        //Button-SpellBook
+        if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(638) && e.pageX < this.canvasX + this.units(688)) {
+            this.DI(this.canInt, "https://i.ibb.co/crrjW6L/Button-Spell-Book.png", this.units(645), this.units(560), this.units(47), this.units(37));
+            this.buttonSpellBook = true;
+        }
+        //Button-Wait
+        if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(690) && e.pageX < this.canvasX + this.units(740)) {
+            this.DI(this.canInt, "https://i.ibb.co/kSTDkRg/Button-Wait.png", this.units(697), this.units(562), this.units(45), this.units(33));
+            this.buttonWait = false;
+        }
+
+        //Button-HoldPosition
+        if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(742) && e.pageX < this.canvasX + this.units(792)) {
+            this.DI(this.canInt, "https://i.ibb.co/zmwnXpk/Button-Hold-Position.png", this.units(747), this.units(561), this.units(45), this.units(35));
+            this.buttonHoldPosition = false;
+        }
+
+        //Button-AutoFight
+        if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(157) && e.pageX < this.canvasX + this.units(206)) {
+            this.DI(this.canInt, "https://i.ibb.co/NYg5Ddg/Button-Auto-Fight.png", this.units(160), this.units(562), this.units(45), this.units(34));
+            this.buttonAutoFight = false;
+        }
+
+        //Button-Retreat
+        if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(105) && e.pageX < this.canvasX + this.units(155)) {
+            this.DI(this.canInt, "https://i.ibb.co/QDbcgds/Button-Retreat.png", this.units(109), this.units(562), this.units(45), this.units(34));
+            this.buttonRetreat = true;
+        }
+
+        //Button-Surrender
+        if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(57) && e.pageX < this.canvasX + this.units(104)) {
+            this.DI(this.canInt, "https://i.ibb.co/jgNgvRD/Button-Surrender.png", this.units(58), this.units(562), this.units(46), this.units(34));
+            this.buttonSurrender = false;
+        }
+
+        //Button-Computer
+        if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(6) && e.pageX < this.canvasX + this.units(54)) {
+            this.DI(this.canInt, "https://i.ibb.co/6YvBSM4/Button-Computer.png", this.units(7), this.units(562), this.units(46), this.units(34));
+            this.buttonComputer = true;
         }
     }
 
-    handleServerMessage(e) {
+    canIntHandleMouseUp(e) {
+        if (this.buttonSpellBook && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(638) && e.pageX < this.canvasX + this.units(688)) {
+            if (this.window) {
+                this.clearCan(this.canWin);
+            }
+            else {
+                this.DI(this.canWin, "https://i.ibb.co/F4fJWZ2/Spellbook.png", (this.canvasWidth_ * (1 / 2)) * (1 / 2), ((this.canvasHeight_ * (2 / 3)) * (1 / 2)) / 2, this.canvasWidth_ * (1 / 2), this.canvasHeight_ * (2 / 3));
+            }
+            this.window = !this.window;
+        }
+
+        if (this.buttonComputer && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(6) && e.pageX < this.canvasX + this.units(54)) {
+            if (this.window) {
+                this.clearCan(this.canWin);
+            }
+            else {
+                this.DI(this.canWin, "https://i.ibb.co/QXKbPFF/window-Computer.png", (this.canvasWidth_ * (1 / 2)) * (1 / 2), ((this.canvasHeight_ * (2 / 3)) * (1 / 2)) / 2, this.canvasWidth_ * (1 / 2), this.canvasHeight_ * (2 / 3));
+            }
+            this.window = !this.window;
+        }
+
+        if (this.buttonRetreat && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(105) && e.pageX < this.canvasX + this.units(155)) {
+            if (this.window) {
+                this.clearCan(this.canWin);
+            }
+            else {
+                this.DI(this.canWin, "https://i.ibb.co/vzYt0Mb/windows-Retreat.png", (this.canvasWidth_ * (1 / 3)), (this.canvasHeight_ * 1 / 3), 415, 207);
+            }
+            this.window = !this.window;
+        }
+
+        this.buttonComputer = false;
+        this.buttonSurrender = false;
+        this.buttonRetreat = false;
+        this.buttonAutoFight = false;
+        this.buttonConsoleUp = false;
+        this.buttonConsoleDown = false;
+        this.buttonSpellBook = false;
+        this.buttonWait = false;
+        this.buttonHoldPosition = false;
+
+        this.clearCan(this.canInt);
+        this.DI(this.canInt, "https://i.ibb.co/kGK4GmT/game-Frame.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
+    }
+
+    gridHandleMouseClick(e) {
+        //if (this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
+        //let p = this.Point(this.currHex.x, this.currHex.y);
+        //this.socket.send(JSON.stringify(p));
+        //}
+    }
+
+    /*handleServerMessage(e) {
         let newPos = JSON.parse(e.data);
         this.objects[newPos.x][newPos.y] = this.objects[this.currObj.x][this.currObj.y];
         this.objects[this.currObj.x][this.currObj.y] = null;
@@ -360,7 +468,7 @@ export default class Tactic extends React.Component {
         this.currObj.y = newPos.y;
 
         this.drawObjects(this.canObj);
-    }
+    }*/
 
     render() {
         return (
@@ -372,7 +480,7 @@ export default class Tactic extends React.Component {
                 <canvas ref={canSel => this.canSel = canSel}> </canvas>
                 <canvas ref={canObj => this.canObj = canObj}> </canvas>
                 <canvas ref={canInt => this.canInt = canInt}> </canvas>
-                <canvas ref={canWin => this.canWin = canWin} onMouseMove={this.canWinHandleMouseMove} onClick={this.canWinHandleMouseClick}> </canvas>
+                <canvas ref={canWin => this.canWin = canWin} onMouseMove={this.canWinHandleMouseMove} onClick={this.canWinHandleMouseClick} onMouseDown={this.canWinHandleMouseDown} onMouseUp={this.canWinHandleMouseUp}> </canvas>
             </div>
         )
     }
