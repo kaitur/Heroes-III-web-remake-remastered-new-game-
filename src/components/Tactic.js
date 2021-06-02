@@ -20,7 +20,7 @@ export default class Tactic extends React.Component {
         this.canWinHandleMouseMove = this.canWinHandleMouseMove.bind(this);
         this.canWinHandleMouseDown = this.canWinHandleMouseDown.bind(this);
         this.canWinHandleMouseUp = this.canWinHandleMouseUp.bind(this);
-        //this.handleServerMessage = this.handleServerMessage.bind(this);
+        this.handleServerMessage = this.handleServerMessage.bind(this);
 
         this.buttonComputer = false;
         this.buttonSurrender = false;
@@ -61,9 +61,9 @@ export default class Tactic extends React.Component {
         this.currHex = this.Point(0, 0);
         this.objects = [];
         for (let i = 0; i < 15; i++)
-            this.objects[i] = [];
+        this.objects[i] = [];
         this.objects[3][4] = new Objects(3, 4, 3, "https://i.ibb.co/j8qr53X/pess.png", false);
-        this.objects[4][9] = new Objects(4, 9, 5, "https://i.ibb.co/G2xn5bW/Royal-Griffin.png", true);
+        this.objects[4][9] = new Objects(4, 9, 5, "https://i.ibb.co/smx7dvv/Archer.png", false);
         this.objects[11][7] = new Objects(11, 7, 3, "https://i.ibb.co/zV0VBTQ/Champion.png", true);
 
         this.window = false;
@@ -76,6 +76,9 @@ export default class Tactic extends React.Component {
         this.socket.onmessage = this.handleServerMessage;
 
         this.currObj = this.Point(3, 4);
+
+        this.firstLoadReady = false;
+        this.turn = false;
     }
 
     componentDidMount() {
@@ -454,21 +457,46 @@ export default class Tactic extends React.Component {
     }
 
     gridHandleMouseClick(e) {
-        //if (this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
-        //let p = this.Point(this.currHex.x, this.currHex.y);
-        //this.socket.send(JSON.stringify(p));
-        //}
+        //if (this.turn == 0) {
+            
+            if (this.turn && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
+                let p = this.Point(this.currHex.x, this.currHex.y);
+                console.log(p);
+                this.socket.send(JSON.stringify(p));
+           // }
+        }
     }
 
-    /*handleServerMessage(e) {
-        let newPos = JSON.parse(e.data);
-        this.objects[newPos.x][newPos.y] = this.objects[this.currObj.x][this.currObj.y];
-        this.objects[this.currObj.x][this.currObj.y] = null;
-        this.currObj.x = newPos.x;
-        this.currObj.y = newPos.y;
+    handleServerMessage(e) {
+        if (!this.firstLoadReady) {
+            this.turn = JSON.parse(e.data) == 0 ? true : false;
+            console.log("res");
+            console.log(e.data);
+            this.firstLoadReady = true;
+            /*let newConn = JSON.parse(e.data);
+            for (let i = 0; i < newConn.length; i++)
+            {
+                this.objects[newConn[i].x][newConn[i].y] = newConn[i].obj;
+            }
+            console.log("fjgfhadghuidgfa");
+            this.firstLoadReady = true;*/
+        }
+        else {
+            let p = JSON.parse(e.data);
+            console.log(e);
+            //if (this.turn == 0) {
+                this.objects[p.x][p.y] = this.objects[this.currObj.x][this.currObj.y];
+                this.objects[this.currObj.x][this.currObj.y] = null;
+                this.currObj.x = p.x;
+                this.currObj.y = p.y;
+
+                this.turn = !this.turn;
+                //console.log();
+            //}
+        }
 
         this.drawObjects(this.canObj);
-    }*/
+    }
 
     render() {
         return (
