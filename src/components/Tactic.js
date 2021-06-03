@@ -2,11 +2,13 @@ import React from 'react';
 import "./Tactic.css";
 
 class Objects {
-    constructor(x, y, speed_, image, double_) {
+    constructor(x, y, speed_, image, double_, flying_, playerId_) {
         this.speed = speed_;
-        this.img = image;
+        this.imageLink = image;
         this.doubleCell = double_;
         this.canMove = [];
+        this.flying = flying_;
+        this.playerId = playerId_;
         //this.canMove[0] = { x: x - 1, y: y + 0 };
         //this.canMove[1] = { x: x - 1, y: y + 1 };
     }
@@ -61,10 +63,10 @@ export default class Tactic extends React.Component {
         this.currHex = this.Point(0, 0);
         this.objects = [];
         for (let i = 0; i < 15; i++)
-        this.objects[i] = [];
-        this.objects[3][4] = new Objects(3, 4, 3, "https://i.ibb.co/j8qr53X/pess.png", false);
+            this.objects[i] = [];
+        /*this.objects[3][4] = new Objects(3, 4, 3, "https://i.ibb.co/j8qr53X/pess.png", false);
         this.objects[4][9] = new Objects(4, 9, 5, "https://i.ibb.co/smx7dvv/Archer.png", false);
-        this.objects[11][7] = new Objects(11, 7, 3, "https://i.ibb.co/zV0VBTQ/Champion.png", true);
+        this.objects[11][7] = new Objects(11, 7, 3, "https://i.ibb.co/zV0VBTQ/Champion.png", true);*/
 
         this.window = false;
         this.unit = this.canvasHeight_ / 600;
@@ -75,7 +77,7 @@ export default class Tactic extends React.Component {
         this.socket = new WebSocket(connectionUrl);
         this.socket.onmessage = this.handleServerMessage;
 
-        this.currObj = this.Point(3, 4);
+        this.currObj = this.Point(0, 0);
 
         this.firstLoadReady = false;
         this.turn = false;
@@ -86,9 +88,14 @@ export default class Tactic extends React.Component {
             canvasSize: { canvasWidth: this.canvasWidth_, canvasHeight: this.canvasHeight_ }
         })
 
+        this.canTemp.width = this.canvasWidth;
+        this.canTemp.height = this.canvasHeight;
+        let ctx = this.canTemp.getContext("2d");
+        ctx.translate(this.canvasX, this.canvasY);
+
         this.canBack.width = this.canvasWidth;
         this.canBack.height = this.canvasHeight;
-        let ctx = this.canBack.getContext("2d");
+        ctx = this.canBack.getContext("2d");
         ctx.translate(this.canvasX, this.canvasY);
 
         this.canGrid.width = this.canvasWidth;
@@ -160,8 +167,12 @@ export default class Tactic extends React.Component {
     }
 
     drawObjects(canvasID) {
+        
         this.clearCan(this.canObj);
         this.clearCan(this.canFill);
+        /*let canvas_ = document.createElement('canvas');
+        canvas_.width = this.canvasWidth_;
+        canvas_.height = this.canvasHeight_;*/
         for (let i = 0; i < 15; i++)
             for (let j = 0; j < 11; j++) {
                 if (this.objects[i][j]) {
@@ -169,7 +180,7 @@ export default class Tactic extends React.Component {
                         this.drawFillHex(this.canFill, this.objects[i][j].canMove[x], "black");
 
                     let img = new Image();
-                    img.src = this.objects[i][j].img;
+                    img.src = this.objects[i][j].imageLink;
                     let coord = this.indexToPixel(this.Point(i, j));
                     coord.x -= this.hexWidth / 2;
                     coord.y -= this.hexHeight;
@@ -178,11 +189,15 @@ export default class Tactic extends React.Component {
                         size.x *= 2;
                     img.onload = () => { this.drawImageCan(canvasID, img, coord.x, coord.y, size.x, size.y) };
 
+                    //const ctx = this.canObj.getContext("2d");
+                    //ctx.drawImage(this.canTemp, 0, 0);
                     this.drawFillHex(canvasID, this.Point(i, j), "blue");
                     if (this.objects[i][j].doubleCell)
                         this.drawFillHex(canvasID, this.Point(i + 1, j), "blue");
                 }
             }
+            //this.clearCan(this.canTemp);
+            //console.log("cleared");
     }
 
     drawHex(canvasID, index, color) {
@@ -442,6 +457,10 @@ export default class Tactic extends React.Component {
             this.window = !this.window;
         }
 
+        if (this.buttonWait && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(690) && e.pageX < this.canvasX + this.units(740)) {
+            this.socket.send(JSON.stringify({conType: 'Wait'}));
+        }
+
         this.buttonComputer = false;
         this.buttonSurrender = false;
         this.buttonRetreat = false;
@@ -458,49 +477,54 @@ export default class Tactic extends React.Component {
 
     gridHandleMouseClick(e) {
         //if (this.turn == 0) {
-            
-            if (this.turn && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
-                let p = this.Point(this.currHex.x, this.currHex.y);
-                console.log(p);
-                this.socket.send(JSON.stringify(p));
-           // }
+
+        if (this.turn && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
+            let p = this.Point(this.currHex.x, this.currHex.y);
+            console.log(p);
+            this.socket.send(JSON.stringify(p));
+            // }
         }
     }
 
     handleServerMessage(e) {
-        if (!this.firstLoadReady) {
-            this.turn = JSON.parse(e.data) == 0 ? true : false;
-            console.log("res");
-            console.log(e.data);
-            this.firstLoadReady = true;
-            /*let newConn = JSON.parse(e.data);
-            for (let i = 0; i < newConn.length; i++)
-            {
-                this.objects[newConn[i].x][newConn[i].y] = newConn[i].obj;
-            }
-            console.log("fjgfhadghuidgfa");
-            this.firstLoadReady = true;*/
-        }
-        else {
-            let p = JSON.parse(e.data);
-            console.log(e);
-            //if (this.turn == 0) {
-                this.objects[p.x][p.y] = this.objects[this.currObj.x][this.currObj.y];
+        console.log("loh");
+        let con = JSON.parse(e.data);
+        console.log(con.conType);
+        switch (con.conType) {
+            case "Move": {
+                this.objects[con.point.x][con.point.y] = this.objects[this.currObj.x][this.currObj.y];
                 this.objects[this.currObj.x][this.currObj.y] = null;
-                this.currObj.x = p.x;
-                this.currObj.y = p.y;
-
-                this.turn = !this.turn;
-                //console.log();
-            //}
+                this.currObj.x = con.point.x;
+                this.currObj.y = con.point.y;
+                this.drawObjects(this.canObj);
+                //this.turn = !this.turn;
+                break;
+            }
+            case "InitialState": {
+                this.turn = con.turn == 0 ? true : false;
+                this.firstLoadReady = true;
+                console.log(this.objects);
+                this.objects = con.Base;
+                console.log(con.Base);
+                console.log(this.objects);
+                this.drawObjects(this.canObj);
+                break;
+            }
+            case "Turn": {
+                this.turn = con.isHoding;
+                this.currObj = con.activeSquad;
+                console.log(this.currObj);
+                break;
+            }
         }
 
-        this.drawObjects(this.canObj);
+        
     }
 
     render() {
         return (
             <div>
+                <canvas ref={canTemp => this.canTemp = canTemp}> </canvas>
                 <canvas ref={canBack => this.canBack = canBack}> </canvas>
                 <canvas ref={canGrid => this.canGrid = canGrid}> </canvas>
                 <canvas ref={canFill => this.canFill = canFill}> </canvas>
