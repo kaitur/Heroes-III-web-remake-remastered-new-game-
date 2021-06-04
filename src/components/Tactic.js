@@ -72,7 +72,7 @@ export default class Tactic extends React.Component {
         this.unit = this.canvasHeight_ / 600;
 
         let scheme = document.location.protocol === "https:" ? "wss" : "ws";
-        let connectionUrl = scheme + "://10.0.0.150:5000/ws";
+        let connectionUrl = scheme + "://10.0.0.150:5004/ws";
         console.log(document.location.hostname);
         this.socket = new WebSocket(connectionUrl);
         this.socket.onmessage = this.handleServerMessage;
@@ -480,6 +480,7 @@ export default class Tactic extends React.Component {
 
         if (this.turn && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
             let p = this.Point(this.currHex.x, this.currHex.y);
+            console.log("loh <p");
             console.log(p);
             this.socket.send(JSON.stringify(p));
             // }
@@ -498,6 +499,7 @@ export default class Tactic extends React.Component {
                 this.currObj.y = con.point.y;
                 this.drawObjects(this.canObj);
                 //this.turn = !this.turn;
+                console.log("move get");
                 break;
             }
             case "InitialState": {
