@@ -72,7 +72,7 @@ export default class Tactic extends React.Component {
         this.unit = this.canvasHeight_ / 600;
 
         let scheme = document.location.protocol === "https:" ? "wss" : "ws";
-        let connectionUrl = scheme + "://10.0.0.150:5004/ws";
+        let connectionUrl = scheme + "://10.0.0.81:5000/ws";
         console.log(document.location.hostname);
         this.socket = new WebSocket(connectionUrl);
         this.socket.onmessage = this.handleServerMessage;
@@ -167,7 +167,7 @@ export default class Tactic extends React.Component {
     }
 
     drawObjects(canvasID) {
-        
+
         this.clearCan(this.canObj);
         this.clearCan(this.canFill);
         /*let canvas_ = document.createElement('canvas');
@@ -176,8 +176,16 @@ export default class Tactic extends React.Component {
         for (let i = 0; i < 15; i++)
             for (let j = 0; j < 11; j++) {
                 if (this.objects[i][j]) {
-                    for (let x = 0; this.objects[i][j].canMove[x]; x++)
-                        this.drawFillHex(this.canFill, this.objects[i][j].canMove[x], "black");
+                    console.log("chuhnyaaaa");
+                    console.log(this.currObj);
+                    console.log(this.Point(i, j));
+                    console.log(this.currObj.x == i && this.currObj.y == j);
+                    if (this.currObj.x == i && this.currObj.y == j)
+                        for (let x = 0; this.objects[i][j].canMove[x]; x++) {
+                            this.drawFillHex(this.canFill, this.objects[i][j].canMove[x], "black");
+                            console.log(this.objects[i][j]);
+                            console.log(this.objects[i][j].canMove[x]);
+                        }
 
                     let img = new Image();
                     img.src = this.objects[i][j].imageLink;
@@ -196,8 +204,8 @@ export default class Tactic extends React.Component {
                         this.drawFillHex(canvasID, this.Point(i + 1, j), "blue");
                 }
             }
-            //this.clearCan(this.canTemp);
-            //console.log("cleared");
+        //this.clearCan(this.canTemp);
+        //console.log("cleared");
     }
 
     drawHex(canvasID, index, color) {
@@ -458,7 +466,7 @@ export default class Tactic extends React.Component {
         }
 
         if (this.buttonWait && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(690) && e.pageX < this.canvasX + this.units(740)) {
-            this.socket.send(JSON.stringify({conType: 'Wait'}));
+            this.socket.send(JSON.stringify({ conType: 'Wait' }));
         }
 
         this.buttonComputer = false;
@@ -520,7 +528,7 @@ export default class Tactic extends React.Component {
             }
         }
 
-        
+
     }
 
     render() {
