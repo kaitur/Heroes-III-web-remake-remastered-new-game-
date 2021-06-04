@@ -72,7 +72,7 @@ export default class Tactic extends React.Component {
         this.unit = this.canvasHeight_ / 600;
 
         let scheme = document.location.protocol === "https:" ? "wss" : "ws";
-        let connectionUrl = scheme + "://10.0.0.81:5000/ws";
+        let connectionUrl = scheme + "://10.0.0.150:5005/ws";
         console.log(document.location.hostname);
         this.socket = new WebSocket(connectionUrl);
         this.socket.onmessage = this.handleServerMessage;
@@ -134,6 +134,8 @@ export default class Tactic extends React.Component {
         ctx.translate(this.canvasX, this.canvasY);
 
         this.DI(this.canBack, "battle background/CmBkDes.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
+        this.DI(this.canGrid, "https://i.ibb.co/b21DkDL/Valeska-Right.png", this.units(5), this.units(20), this.units(70), this.units(110));
+        this.DI(this.canGrid, "https://i.ibb.co/RSF88wm/Geralt-Left.png", this.units(730), this.units(20), this.units(70), this.units(110));
         this.DI(this.canInt, "https://i.ibb.co/kGK4GmT/game-Frame.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
 
         this.drawGrid(this.canGrid);
@@ -176,16 +178,9 @@ export default class Tactic extends React.Component {
         for (let i = 0; i < 15; i++)
             for (let j = 0; j < 11; j++) {
                 if (this.objects[i][j]) {
-                    console.log("chuhnyaaaa");
-                    console.log(this.currObj);
-                    console.log(this.Point(i, j));
-                    console.log(this.currObj.x == i && this.currObj.y == j);
                     if (this.currObj.x == i && this.currObj.y == j)
-                        for (let x = 0; this.objects[i][j].canMove[x]; x++) {
+                        for (let x = 0; this.objects[i][j].canMove[x]; x++)
                             this.drawFillHex(this.canFill, this.objects[i][j].canMove[x], "black");
-                            console.log(this.objects[i][j]);
-                            console.log(this.objects[i][j].canMove[x]);
-                        }
 
                     let img = new Image();
                     img.src = this.objects[i][j].imageLink;
@@ -199,9 +194,12 @@ export default class Tactic extends React.Component {
 
                     //const ctx = this.canObj.getContext("2d");
                     //ctx.drawImage(this.canTemp, 0, 0);
-                    this.drawFillHex(canvasID, this.Point(i, j), "blue");
-                    if (this.objects[i][j].doubleCell)
-                        this.drawFillHex(canvasID, this.Point(i + 1, j), "blue");
+                    if (this.currObj.x == i && this.currObj.y == j) {
+
+                        this.drawFillHex(canvasID, this.Point(i, j), "blue");
+                        if (this.objects[i][j].doubleCell)
+                            this.drawFillHex(canvasID, this.Point(i + 1, j), "blue");
+                    }
                 }
             }
         //this.clearCan(this.canTemp);
@@ -361,6 +359,8 @@ export default class Tactic extends React.Component {
     }
 
     canWinHandleMouseClick(e) {
+        this.clearCan(this.canWin);
+        this.window = false;
         this.canIntHandleMouseClick(e);
     }
 
@@ -444,7 +444,6 @@ export default class Tactic extends React.Component {
             }
             this.window = !this.window;
         }
-
         if (this.buttonComputer && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(6) && e.pageX < this.canvasX + this.units(54)) {
             if (this.window) {
                 this.clearCan(this.canWin);
@@ -460,13 +459,9 @@ export default class Tactic extends React.Component {
                 this.clearCan(this.canWin);
             }
             else {
-                this.DI(this.canWin, "https://i.ibb.co/vzYt0Mb/windows-Retreat.png", (this.canvasWidth_ * (1 / 3)), (this.canvasHeight_ * 1 / 3), 415, 207);
+                this.DI(this.canWin, "https://i.ibb.co/vzYt0Mb/windows-Retreat.png", this.units(200), this.units(200), this.units(400), this.units(200));
             }
             this.window = !this.window;
-        }
-
-        if (this.buttonWait && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(690) && e.pageX < this.canvasX + this.units(740)) {
-            this.socket.send(JSON.stringify({ conType: 'Wait' }));
         }
 
         this.buttonComputer = false;
@@ -485,8 +480,13 @@ export default class Tactic extends React.Component {
 
     gridHandleMouseClick(e) {
         //if (this.turn == 0) {
-
-        if (this.turn && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
+        //console.log(this.objects[this.currObj.x][this.currObj.y].canMove);
+        //console.log(this.currHex);
+        //console.log(this.objects[this.currObj.x][this.currObj.y].canMove.indexOf(this.currHex));
+        //console.log(this.currObj);
+        //console.log(this.currHex);
+        //console.log(this.objects[this.currObj.x][this.currObj.y].canMove);
+        if (this.turn && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x == this.currHex.x && hex.y == this.currHex.y) > -1 && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
             let p = this.Point(this.currHex.x, this.currHex.y);
             console.log("loh <p");
             console.log(p);
@@ -511,7 +511,7 @@ export default class Tactic extends React.Component {
                 break;
             }
             case "InitialState": {
-                this.turn = con.turn == 0 ? true : false;
+                //this.turn = con.turn == 0 ? true : false;
                 this.firstLoadReady = true;
                 console.log(this.objects);
                 this.objects = con.Base;
