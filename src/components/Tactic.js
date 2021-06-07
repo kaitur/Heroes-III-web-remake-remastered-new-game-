@@ -72,7 +72,7 @@ export default class Tactic extends React.Component {
         this.unit = this.canvasHeight_ / 600;
 
         let scheme = document.location.protocol === "https:" ? "wss" : "ws";
-        let connectionUrl = scheme + "://10.0.0.150:5005/ws";
+        let connectionUrl = scheme + "://10.0.0.81:5005/ws";
         console.log(document.location.hostname);
         this.socket = new WebSocket(connectionUrl);
         this.socket.onmessage = this.handleServerMessage;
@@ -467,7 +467,11 @@ export default class Tactic extends React.Component {
         if (this.buttonHoldPosition && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(742) && e.pageX < this.canvasX + this.units(792)) {
             console.log("hold sent");
             this.socket.send(JSON.stringify({ conType: "Hold" }));
-            
+        }
+
+        if (this.buttonWait && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(690) && e.pageX < this.canvasX + this.units(740)) {
+            console.log("wait sent");
+            this.socket.send(JSON.stringify({ conType: "Wait" }));
         }
 
         this.buttonComputer = false;
