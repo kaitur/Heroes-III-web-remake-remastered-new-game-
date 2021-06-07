@@ -72,7 +72,7 @@ export default class Tactic extends React.Component {
         this.unit = this.canvasHeight_ / 600;
 
         let scheme = document.location.protocol === "https:" ? "wss" : "ws";
-        let connectionUrl = scheme + "://10.0.0.81:5005/ws";
+        let connectionUrl = scheme + "://10.0.0.150:5005/ws";
         console.log(document.location.hostname);
         this.socket = new WebSocket(connectionUrl);
         this.socket.onmessage = this.handleServerMessage;
@@ -90,12 +90,12 @@ export default class Tactic extends React.Component {
 
         this.canTemp.width = this.canvasWidth;
         this.canTemp.height = this.canvasHeight;
-        let ctx = this.canTemp.getContext("2d");
-        ctx.translate(this.canvasX, this.canvasY);
+        /*let ctx = this.canTemp.getContext("2d");
+        ctx.translate(this.canvasX, this.canvasY);*/
 
         this.canBack.width = this.canvasWidth;
         this.canBack.height = this.canvasHeight;
-        ctx = this.canBack.getContext("2d");
+        let ctx = this.canBack.getContext("2d");
         ctx.translate(this.canvasX, this.canvasY);
 
         this.canGrid.width = this.canvasWidth;
@@ -170,17 +170,28 @@ export default class Tactic extends React.Component {
 
     drawObjects(canvasID) {
 
-        this.clearCan(this.canObj);
+
         this.clearCan(this.canFill);
+        this.clearCan(this.canTemp);
+        //this.clearCan(this.canObj);
+
+        let unitsCount = 0, loadedCount = 0;
         /*let canvas_ = document.createElement('canvas');
         canvas_.width = this.canvasWidth_;
         canvas_.height = this.canvasHeight_;*/
         for (let i = 0; i < 15; i++)
             for (let j = 0; j < 11; j++) {
                 if (this.objects[i][j]) {
-                    if (this.turn && this.currObj.x == i && this.currObj.y == j)
+                    if (this.turn && this.currObj.x == i && this.currObj.y == j) {
                         for (let x = 0; this.objects[i][j].canMove[x]; x++)
-                            this.drawFillHex(this.canFill, this.objects[i][j].canMove[x], "black");
+                            this.drawFillHex(this.canTemp, this.objects[i][j].canMove[x], "black");
+                        const ctx = this.canFill.getContext("2d");
+                        this.clearCan(this.canFill);
+                        ctx.drawImage(this.canTemp, 0, 0);
+                        this.clearCan(this.canTemp);
+                    }
+
+
 
                     let img = new Image();
                     img.src = this.objects[i][j].imageLink;
@@ -190,18 +201,28 @@ export default class Tactic extends React.Component {
                     let size = this.Point(this.hexWidth * 1.25, this.hexHeight * 1.25);
                     if (this.objects[i][j].doubleCell)
                         size.x *= 2;
-                    img.onload = () => { this.drawImageCan(canvasID, img, coord.x, coord.y, size.x, size.y) };
+                    unitsCount++;
+                    img.onload = () => { this.drawImageCan(this.canTemp, img, coord.x, coord.y, size.x, size.y); loadedCount++; };
 
                     //const ctx = this.canObj.getContext("2d");
                     //ctx.drawImage(this.canTemp, 0, 0);
                     if (this.currObj.x == i && this.currObj.y == j) {
 
-                        this.drawFillHex(canvasID, this.Point(i, j), "blue");
+                        this.drawFillHex(this.canTemp, this.Point(i, j), "blue");
                         if (this.objects[i][j].doubleCell)
-                            this.drawFillHex(canvasID, this.Point(i + 1, j), "blue");
+                            this.drawFillHex(this.canTemp, this.Point(i + 1, j), "blue");
                     }
                 }
             }
+        let timer = setInterval(() => {
+            if (unitsCount == loadedCount) {
+                const ctx = this.canObj.getContext("2d");
+                this.clearCan(this.canObj);
+                console.log("between");
+                ctx.drawImage(this.canTemp, 0, 0);
+                clearInterval(timer);
+            }
+        }, 100);
         //this.clearCan(this.canTemp);
         //console.log("cleared");
     }
@@ -484,8 +505,9 @@ export default class Tactic extends React.Component {
         this.buttonWait = false;
         this.buttonHoldPosition = false;
 
-        this.clearCan(this.canInt);
-        this.DI(this.canInt, "https://i.ibb.co/kGK4GmT/game-Frame.png", 0, 0, this.canvasWidth_, this.canvasHeight_);
+        let img = new Image();
+        img.src = "https://i.ibb.co/kGK4GmT/game-Frame.png";
+        img.onload = () => { this.clearCan(this.canInt); this.drawImageCan(this.canInt, img, 0, 0, this.canvasWidth_, this.canvasHeight_) };
     }
 
     gridHandleMouseClick(e) {
@@ -499,7 +521,7 @@ export default class Tactic extends React.Component {
         if (this.turn && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x == this.currHex.x && hex.y == this.currHex.y) > -1 && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
             let p = this.Point(this.currHex.x, this.currHex.y);
             console.log("loh <p");
-            
+
             let conMove = { conType: "Move", point: p };
             console.log(conMove);
             this.socket.send(JSON.stringify(conMove));
@@ -517,7 +539,7 @@ export default class Tactic extends React.Component {
                 this.objects[this.currObj.x][this.currObj.y] = null;
                 this.currObj.x = con.point.x;
                 this.currObj.y = con.point.y;
-                this.drawObjects(this.canObj);
+                //this.drawObjects(this.canObj);
                 //this.turn = !this.turn;
                 console.log("move get");
                 break;
@@ -546,7 +568,7 @@ export default class Tactic extends React.Component {
     render() {
         return (
             <div>
-                <canvas ref={canTemp => this.canTemp = canTemp}> </canvas>
+                <canvas ref={canTemp => this.canTemp = canTemp} id="canTemp"> </canvas>
                 <canvas ref={canBack => this.canBack = canBack}> </canvas>
                 <canvas ref={canGrid => this.canGrid = canGrid}> </canvas>
                 <canvas ref={canFill => this.canFill = canFill}> </canvas>

@@ -1,7 +1,13 @@
 body{
     background-image: url(https://i.ibb.co/qgVGBWV/webBack.png);
 }
+
 canvas{
     position: absolute;
     left: 0;
 }
+
+#canTemp{
+    visibility: hidden;
+}
+
