@@ -178,7 +178,7 @@ export default class Tactic extends React.Component {
         for (let i = 0; i < 15; i++)
             for (let j = 0; j < 11; j++) {
                 if (this.objects[i][j]) {
-                    if (this.currObj.x == i && this.currObj.y == j)
+                    if (this.turn && this.currObj.x == i && this.currObj.y == j)
                         for (let x = 0; this.objects[i][j].canMove[x]; x++)
                             this.drawFillHex(this.canFill, this.objects[i][j].canMove[x], "black");
 
@@ -400,19 +400,19 @@ export default class Tactic extends React.Component {
         //Button-Wait
         if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(690) && e.pageX < this.canvasX + this.units(740)) {
             this.DI(this.canInt, "https://i.ibb.co/kSTDkRg/Button-Wait.png", this.units(697), this.units(562), this.units(45), this.units(33));
-            this.buttonWait = false;
+            this.buttonWait = true;
         }
 
         //Button-HoldPosition
         if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(742) && e.pageX < this.canvasX + this.units(792)) {
             this.DI(this.canInt, "https://i.ibb.co/zmwnXpk/Button-Hold-Position.png", this.units(747), this.units(561), this.units(45), this.units(35));
-            this.buttonHoldPosition = false;
+            this.buttonHoldPosition = true;
         }
 
         //Button-AutoFight
         if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(157) && e.pageX < this.canvasX + this.units(206)) {
             this.DI(this.canInt, "https://i.ibb.co/NYg5Ddg/Button-Auto-Fight.png", this.units(160), this.units(562), this.units(45), this.units(34));
-            this.buttonAutoFight = false;
+            this.buttonAutoFight = true;
         }
 
         //Button-Retreat
@@ -424,7 +424,7 @@ export default class Tactic extends React.Component {
         //Button-Surrender
         if (e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(57) && e.pageX < this.canvasX + this.units(104)) {
             this.DI(this.canInt, "https://i.ibb.co/jgNgvRD/Button-Surrender.png", this.units(58), this.units(562), this.units(46), this.units(34));
-            this.buttonSurrender = false;
+            this.buttonSurrender = true;
         }
 
         //Button-Computer
@@ -464,6 +464,12 @@ export default class Tactic extends React.Component {
             this.window = !this.window;
         }
 
+        if (this.buttonHoldPosition && e.pageY > this.canvasY + this.units(556) && e.pageY < this.canvasY + this.units(600) && e.pageX > this.canvasX + this.units(742) && e.pageX < this.canvasX + this.units(792)) {
+            console.log("hold sent");
+            this.socket.send(JSON.stringify({ conType: "Hold" }));
+            
+        }
+
         this.buttonComputer = false;
         this.buttonSurrender = false;
         this.buttonRetreat = false;
@@ -489,8 +495,10 @@ export default class Tactic extends React.Component {
         if (this.turn && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x == this.currHex.x && hex.y == this.currHex.y) > -1 && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
             let p = this.Point(this.currHex.x, this.currHex.y);
             console.log("loh <p");
-            console.log(p);
-            this.socket.send(JSON.stringify(p));
+            
+            let conMove = { conType: "Move", point: p };
+            console.log(conMove);
+            this.socket.send(JSON.stringify(conMove));
             // }
         }
     }
