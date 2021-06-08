@@ -72,7 +72,7 @@ export default class Tactic extends React.Component {
         this.unit = this.canvasHeight_ / 600;
 
         let scheme = document.location.protocol === "https:" ? "wss" : "ws";
-        let connectionUrl = scheme + "://10.0.0.150:5005/ws";
+        let connectionUrl = scheme + "://10.0.0.81:5005/ws";
         console.log(document.location.hostname);
         this.socket = new WebSocket(connectionUrl);
         this.socket.onmessage = this.handleServerMessage;
@@ -356,6 +356,13 @@ export default class Tactic extends React.Component {
 
     }
 
+    contains(P, p) {
+        for (let i = 0; i < P.length; i++)
+            if (P[i] == p)
+                return true;
+        return false;
+    }
+
     gridHandleMouseMove(e) {
         let newHex = this.mouseIndex(this.Point(e.pageX, e.pageY));
         if (this.currHex !== this.newHex) {
@@ -365,9 +372,56 @@ export default class Tactic extends React.Component {
                 this.drawFillHex(this.canSel, this.currHex, "black");
             }
         }
-        if (newHex.y >= 0 && newHex.y < this.gridHeight && newHex.x >= 0 && newHex.x < this.gridWidth && (this.objects[this.currHex.x][this.currHex.y] || this.currHex.x > 0 && this.objects[this.currHex.x - 1][this.currHex.y] && this.objects[this.currHex.x - 1][this.currHex.y].doubleCell)) {
-            let cursor = "https://i.ibb.co/562q352/Cursor-Spell-Book-3.png";
-            this.changeCursor(cursor);
+        //console.log(this.objects[this.currHex.x][this.currHex.y].playerId);
+        //console.log(this.objects[this.currObj.x, this.currObj.y].playerId);
+        if (newHex.y >= 0 && newHex.y < this.gridHeight && newHex.x >= 0 && newHex.x < this.gridWidth && this.objects[this.currHex.x][this.currHex.y] && this.objects[this.currHex.x][this.currHex.y].playerId == this.objects[this.currObj.x][this.currObj.y].playerId != this.turn) {
+            let points = [];
+            let i = 0;
+
+            let p = this.Point(this.currHex.x + 1, this.currHex.y);
+            if (this.currHex.x < 14 && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x === p.x && hex.y === p.y) > -1) {
+                points[i] = p
+                i++;
+            }
+
+            p = this.Point(this.currHex.x - 1, this.currHex.y);
+            if (this.currHex.x > 0 && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x === p.x && hex.y === p.y) > -1) {
+                points[i] = p;
+                i++;
+            }
+
+            p = this.Point(this.currHex.x + (this.currHex.y - 1) % 2, this.currHex.y - 1);
+            if (this.currHex.y > 0 && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x === p.x && hex.y === p.y) > -1) {
+                points[i] = p;
+                i++;
+                points[i] = this.Point(this.currHex.x - 1 + (this.currHex.y - 1) % 2, this.currHex.y - 1);
+                i++;
+            }
+
+            p = this.Point(this.currHex.x - 1 + (this.currHex.y - 1) % 2, this.currHex.y - 1);
+            if (this.currHex.y > 0 && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x === p.x && hex.y === p.y) > -1) {
+                points[i] = p;
+                i++;
+            }
+
+            p = this.Point(this.currHex.x + (this.currHex.y + 1) % 2, this.currHex.y + 1);
+            if (this.currHex.y < 10 && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x === p.x && hex.y === p.y) > -1) {
+                points[i] = p;
+                i++;
+            }
+
+            p = this.Point(this.currHex.x - 1 + (this.currHex.y + 1) % 2, this.currHex.y + 1);
+            if (this.currHex.y < 10 && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x === p.x && hex.y === p.y) > -1) {
+                points[i] = p;
+                i++;
+            }
+
+            points.forEach(p => {
+                this.drawHex(this.canSel, p, "red");
+            });
+            
+            //this.drawFillHex(this.canSel, base, "black");
+            //this.changeCursor(cursor);
         }
         else {
             let cursor = "https://i.ibb.co/R47FfMb/Cursor-Default.png";
@@ -518,7 +572,7 @@ export default class Tactic extends React.Component {
         //console.log(this.currObj);
         //console.log(this.currHex);
         //console.log(this.objects[this.currObj.x][this.currObj.y].canMove);
-        if (this.turn && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x == this.currHex.x && hex.y == this.currHex.y) > -1 && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
+        if (this.turn && this.objects[this.currObj.x][this.currObj.y].canMove.findIndex(hex => hex.x === this.currHex.x && hex.y === this.currHex.y) > -1 && this.currHex.y >= 0 && this.currHex.y < this.gridHeight && this.currHex.x >= 0 && this.currHex.x < this.gridWidth) {
             let p = this.Point(this.currHex.x, this.currHex.y);
             console.log("loh <p");
 
